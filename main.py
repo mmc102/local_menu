@@ -102,7 +102,7 @@ admin.add_view(SuggestionAdmin)
 
 
 # Routes
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, methods=["GET", "HEAD"])
 async def list_restaurants(request: Request, db: Session = Depends(get_db), categories: list[str] = Query(default=None), message: str = Query(default=None)):
     """
     Render the list of restaurants as an HTML page, optionally filtered by categories.
