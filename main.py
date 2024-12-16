@@ -9,13 +9,28 @@ from datetime import datetime
 from sqladmin import Admin, ModelView
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
+import os
+from dotenv import load_dotenv
+
+
+# TODO:
+# add some kind of auth to the admin page
+
+
 
 # Initialize FastAPI app
+load_dotenv()
+
 app = FastAPI()
+
+
+
+SECRET_KEY = os.environ["SECRET_KEY"]
+assert SECRET_KEY, "need to have a secret key env var set"
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.add_middleware(SessionMiddleware, secret_key="your_secret_key_here")
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
 # Database setup
 DATABASE_URL = "sqlite:///./restaurants.db"
