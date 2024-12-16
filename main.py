@@ -7,10 +7,14 @@ from sqlalchemy.orm import sessionmaker, Session, relationship
 from sqlalchemy.exc import NoResultFound
 from datetime import datetime
 from sqladmin import Admin, ModelView
+from sqladmin.authentication import AuthenticationBackend
+
 from fastapi.staticfiles import StaticFiles
+
 from starlette.middleware.sessions import SessionMiddleware
 import os
 from dotenv import load_dotenv
+from passlib.context import CryptContext
 
 
 # TODO:
@@ -18,7 +22,6 @@ from dotenv import load_dotenv
 
 
 
-# Initialize FastAPI app
 load_dotenv()
 
 app = FastAPI()
@@ -32,13 +35,11 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 
-# Database setup
 DATABASE_URL = "sqlite:///./restaurants.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Association table for many-to-many relationship between restaurants and categories
 restaurant_category = Table(
     "restaurant_category",
     Base.metadata,
@@ -46,7 +47,18 @@ restaurant_category = Table(
     Column("category_id", Integer, ForeignKey("categories.id"), primary_key=True)
 )
 
-# SQLAlchemy model for restaurants
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_admin = Column(Boolean, default=False) 
+
+    def verify_password(self, password: str) -> bool:
+        return pwd_context.verify(password, self.hashed_password)
+
 class Restaurant(Base):
     __tablename__ = "restaurants"
     id = Column(Integer, primary_key=True, index=True)
@@ -56,14 +68,12 @@ class Restaurant(Base):
     clicks = relationship("Click", back_populates="restaurant")
     categories = relationship("Category", secondary=restaurant_category, back_populates="restaurants")
 
-# SQLAlchemy model for categories
 class Category(Base):
     __tablename__ = "categories"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     restaurants = relationship("Restaurant", secondary=restaurant_category, back_populates="categories")
 
-# SQLAlchemy model for clicks
 class Click(Base):
     __tablename__ = "clicks"
     id = Column(Integer, primary_key=True, index=True)
@@ -103,12 +113,38 @@ class SuggestionAdmin(ModelView, model=SuggestedChanges):
     column_list = [SuggestedChanges.id, SuggestedChanges.handled, SuggestedChanges.suggestion]
 
 
+class AdminAuth(AuthenticationBackend):
+    async def login(self, request: Request) -> bool:
+        form = await request.form()
+        username, password = form["username"], form["password"]
+        db = next(get_db())
+        user = db.query(User).filter(User.username == username).first()
+        if not user or not user.verify_password(password):
+            return templates.TemplateResponse(
+                "login.html",
+                {"request": request, "error": "Invalid username or password"},
+                status_code=401
+            )
+
+        request.session["user_id"] = user.id
+        request.session["is_admin"] = user.is_admin
+        print(user.is_admin)
+        return True
+
+    async def logout(self, request: Request) -> bool:
+        request.session.clear()
+        return True
+
+    async def authenticate(self, request: Request) -> bool:
+        print(request.session)
+        return request.session.get("is_admin") == True
 
 
 
+admin_auth = AdminAuth(secret_key=SECRET_KEY) 
+admin = Admin(app, engine, authentication_backend=admin_auth)
 
 
-admin = Admin(app, engine)
 admin.add_view(RestaurantAdmin)
 admin.add_view(CategoryAdmin)
 admin.add_view(ClickAdmin)
@@ -147,7 +183,35 @@ async def list_restaurants(request: Request, db: Session = Depends(get_db), cate
         }
     )
 
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
+@app.post("/login")
+async def login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.username == username).first()
+    if not user or not user.verify_password(password):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Invalid username or password"},
+            status_code=401
+        )
+
+    request.session["user_id"] = user.id
+    request.session["is_admin"] = user.is_admin
+    return RedirectResponse(url="/admin" if user.is_admin else "/", status_code=303)
+
+
+
+@app.get("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/login", status_code=303)
 
 
 @app.post("/suggestion")
