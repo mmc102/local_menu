@@ -1,0 +1,64 @@
+# Python
+*.py[cod]
+*.py[cod].*
+__pycache__/
+*.so
+*.pyd
+.Python
+env/
+venv/
+instance/
+.pytest_cache/
+*.sqlite3
+*.db
+
+# FastAPI-specific
+*.log
+*.pid
+*.swp
+*.seed
+*.bak
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# Tailwind CSS
+*.css.map
+static/output.css  # Exclude generated Tailwind CSS file if built dynamically
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs and editors
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Docker
+*.env
+docker-compose.override.yml
+.env.*
+.envrc
+.Dockerfile.swp
+
+# Logs
+*.log
+logs/
+*.log.*
+ End of https://www.toptal.com/developers/gitignore/api/python
