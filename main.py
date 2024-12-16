@@ -17,10 +17,6 @@ from dotenv import load_dotenv
 from passlib.context import CryptContext
 
 
-# TODO:
-# add some kind of auth to the admin page
-
-
 
 load_dotenv()
 
@@ -120,6 +116,7 @@ class AdminAuth(AuthenticationBackend):
         db = next(get_db())
         user = db.query(User).filter(User.username == username).first()
         if not user or not user.verify_password(password):
+            print("login failed")
             return templates.TemplateResponse(
                 "login.html",
                 {"request": request, "error": "Invalid username or password"},

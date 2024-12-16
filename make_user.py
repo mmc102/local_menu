@@ -6,7 +6,7 @@ from main import User, Base  # Replace 'your_module_name' with the module contai
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./restaurants.db")
+DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 Base.metadata.create_all(bind=engine)
 

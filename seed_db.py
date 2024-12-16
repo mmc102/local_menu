@@ -2,9 +2,10 @@ import json
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from main import Base, Restaurant, Category
+import os
 
 # Database setup
-DATABASE_URL = "sqlite:///./restaurants.db"
+DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 Base.metadata.create_all(bind=engine)
 
