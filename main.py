@@ -64,11 +64,23 @@ class Restaurant(Base):
     clicks = relationship("Click", back_populates="restaurant")
     categories = relationship("Category", secondary=restaurant_category, back_populates="restaurants")
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f"<Restaurant(name={self.name})>"
+
 class Category(Base):
     __tablename__ = "categories"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     restaurants = relationship("Restaurant", secondary=restaurant_category, back_populates="categories")
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f"<Category(name={self.name})>"
 
 class Click(Base):
     __tablename__ = "clicks"
@@ -76,6 +88,14 @@ class Click(Base):
     restaurant_id = Column(Integer, ForeignKey("restaurants.id"), nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     restaurant = relationship("Restaurant", back_populates="clicks")
+
+    def __str__(self):
+        return self.restaurant.name
+
+    def __repr__(self):
+        return f"<Click on link for(name={self.restaurant.name})>"
+
+
 
 
 class SuggestedChanges(Base):
@@ -96,8 +116,12 @@ def get_db():
         db.close()
 
 
+
 class RestaurantAdmin(ModelView, model=Restaurant):
     column_list = [Restaurant.id, Restaurant.name, Restaurant.location, Restaurant.categories, Restaurant.website]
+    form_include_relationships = True
+
+
 
 class CategoryAdmin(ModelView, model=Category):
     column_list = [Category.id, Category.name, Category.restaurants]
