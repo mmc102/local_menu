@@ -8,9 +8,8 @@ from sqlalchemy.exc import NoResultFound
 from datetime import datetime
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
-
+from sqlalchemy import func
 from fastapi.staticfiles import StaticFiles
-
 from starlette.middleware.sessions import SessionMiddleware
 import os
 from dotenv import load_dotenv
@@ -183,9 +182,8 @@ async def list_restaurants(request: Request, db: Session = Depends(get_db), cate
     query = db.query(Restaurant)
     if categories:
         query = query.join(Restaurant.categories).filter(Category.name.in_(categories))
-    restaurants = query.all()
+    restaurants = query.join(Click, Click.restaurant_id == Restaurant.id, isouter=True).group_by(Restaurant.id).order_by(func.count().desc()).all()
     all_categories = db.query(Category).order_by(Category.name).all()
-    print(categories)
     recently_viewed_ids = request.session.get("recently_viewed", [])
     recently_viewed_restaurants = (
        db.query(Restaurant).filter(Restaurant.id.in_(recently_viewed_ids)).all()
