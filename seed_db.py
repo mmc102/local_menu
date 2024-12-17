@@ -27,6 +27,7 @@ def seed_database(json_file_path):
             # Handle restaurant
             new_restaurant = Restaurant(
                 name=restaurant.get("title"),
+                city="Chattanooga"
                 location=restaurant.get("address1", "Unknown"),
                 website=restaurant.get("weburl", ""),
             )
