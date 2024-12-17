@@ -246,6 +246,13 @@ async def submit_suggestion(suggestion: str = Form(...),db: Session = Depends(ge
     return RedirectResponse(url="/?message=Thanks+for+the+suggestion!", status_code=303)
 
 
+@app.get("/suggestion")
+async def get_suggestion_form(request: Request):
+
+    """
+    Gets the suggestion form
+    """
+    return templates.TemplateResponse("suggestions.html", {"request": request})
 
 
 @app.get("/restaurants/{restaurant_id}/menu")

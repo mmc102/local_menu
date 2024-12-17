@@ -7,89 +7,116 @@
     <link href="/static/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-4">
-    <div class="flex flex-col sm:flex-row">
-        <!-- Main Content -->
-        <div class="flex-1">
-            <h1 class="text-3xl font-bold mb-4">Restaurant List</h1>
+    <h1 class="text-3xl font-bold mb-4">Chattanooga Restaurant List</h1>
 
-            <div class="mb-4">
-                <button 
-                    id="toggle-categories" 
-                    type="button" 
-                    class="mb-2 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 focus:outline-none block sm:hidden"
-                    onclick="toggleCategories()"
-                >
-                    Show Filters
-                </button>
+<div class="mb-4">
+    <!-- Toggle Button (Only visible on mobile) -->
+    <button
+        id="toggle-categories"
+        type="button"
+        class="mb-2 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 focus:outline-none block sm:hidden"
+        onclick="toggleCategories()"
+    >
+        Show Filters
+    </button>
 
-                <!-- Collapsible Category Tags (Only visible on mobile) -->
-                <div id="categories-container" class="flex flex-wrap gap-2 max-w-full hidden sm:hidden">
-                    {% for category in categories %}
-                    <a href="/?categories={{ category.name | urlencode }}" 
-                       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
-                        {{ category.name }}
+    <!-- Collapsible Category Tags (Only visible on mobile) -->
+    <div id="categories-container" class="flex flex-wrap gap-2 max-w-full hidden sm:hidden">
+        {% for category in categories %}
+        {% if category.name in selected_categories %}
+
+        <a href="{% if category.name in selected_categories %}/?{% else %}/?categories={{ category.name | urlencode }}{% endif %}"
+
+           class="px-4 py-2 bg-blue-800 text-white rounded hover:bg-blue-700">
+            {{ category.name }}
+        </a>
+        {% else %}
+        <a href="{% if category.name in selected_categories %}/?{% else %}/?categories={{ category.name  | urlencode }}{% endif %}"
+           class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
+            {{ category.name }}
+        </a>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Always-visible Categories (Only visible on desktop) -->
+    <div class="hidden sm:flex sm:flex-wrap sm:gap-2 sm:mb-4 sm:max-w-full mb-2">
+        {% for category in categories %}
+        {% if category in selected_categories %}
+        <a href="/"
+            class="px-4 py-2 bg-blue-800  text-white rounded hover:bg-blue-700">
+            {{ category.name }}
+        </a>
+        {% else %}
+        <a href="/?categories={{ category.name | urlencode }}"
+           class="px-4 py-2 bg-blue-500  text-white rounded hover:bg-blue-700">
+            {{ category.name }}
+        </a>
+
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if selected_categories %}
+    <div class="sm:flex sm:flex-wrap sm:gap-2 sm:mb-4 sm:max-w-full mt-4">
+        {% for selected_category in selected_categories %}
+        <a href="/?"
+           class="flex flex-row px-4 py-2 bg-blue-800 text-white rounded hover:bg-blue-700 justify-center gap-2">
+            {{ selected_category }} <span ckass="">X</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+</div>
+
+
+    <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+            <tr class="bg-gray-200">
+                <th class="px-4 py-2 border">Name</th>
+                <th class="px-4 py-2 border hidden sm:table-cell">Location</th>
+                <th class="px-4 py-2 border hidden sm:table-cell">Categories</th>
+                <th class="px-4 py-2 border">Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for restaurant in restaurants %}
+            <tr class="hover:bg-gray-100">
+                <td class="px-4 py-2 border">{{ restaurant.name }}</td>
+                <td class="px-4 py-2 border  hidden sm:table-cell">{{ restaurant.location }}</td>
+                <td class="px-4 py-2 border hidden sm:table-cell">
+                    {% for category in restaurant.categories %}
+                    <span class="inline-block px-2 py-1 bg-gray-300 text-sm rounded">{{ category.name }}</span>
+                    {% endfor %}
+                </td>
+                <td class="px-4 py-2 border">
+                    <a href="/restaurants/{{ restaurant.id }}/menu" target="_blank" class="text-blue-500 hover:underline">
+                        Visit
                     </a>
-                    {% endfor %}
-                </div>
-
-                <!-- Always-visible Categories (Only visible on desktop) -->
-                <div class="hidden sm:flex sm:flex-wrap sm:gap-2 sm:mb-4 sm:max-w-full">
-                    {% for category in categories %}
-                    <a href="/?categories={{ category.name | urlencode }}" 
-                       class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700">
-                        {{ category.name }}
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <table class="min-w-full bg-white border border-gray-200">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="px-4 py-2 border">Name</th>
-                        <th class="px-4 py-2 border hidden sm:table-cell">Location</th>
-                        <th class="px-4 py-2 border hidden sm:table-cell">Categories</th>
-                        <th class="px-4 py-2 border">Link</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for restaurant in restaurants %}
-                    <tr class="hover:bg-gray-100">
-                        <td class="px-4 py-2 border">{{ restaurant.name }}</td>
-                        <td class="px-4 py-2 border hidden sm:table-cell">{{ restaurant.location }}</td>
-                        <td class="px-4 py-2 border hidden sm:table-cell">
-                            {% for category in restaurant.categories %}
-                            <span class="inline-block px-2 py-1 bg-gray-300 text-sm rounded">{{ category.name }}</span>
-                            {% endfor %}
-                        </td>
-                        <td class="px-4 py-2 border">
-                            <a href="/restaurants/{{ restaurant.id }}/menu" target="_blank" 
-                               class="text-blue-500 hover:underline">
-                                Visit
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/suggestion" class="text-xl mt-4 ">See an issue? <span class="underline text-blue-500">Let me know!</span></a>
 
 
+<script>
+ function toggleCategories() {
+     const container = document.getElementById('categories-container');
+     const button = document.getElementById('toggle-categories');
 
-
-    <script>
-     function toggleCategories() {
-         const container = document.getElementById('categories-container');
-         const button = document.getElementById('toggle-categories');
-
-         if (container.classList.contains('hidden')) {
-             container.classList.remove('hidden');
-             button.textContent = 'Hide Filters';
-         } else {
-             container.classList.add('hidden');
-             button.textContent = 'Show Filters';
-         }
+     if (container.classList.contains('hidden')) {
+         container.classList.remove('hidden');
+         button.textContent = 'Hide Filters';
+     } else {
+         container.classList.add('hidden');
+         button.textContent = 'Show Filters';
      }
-    </script>
+ }
+</script>
 </body>
 </html>
+

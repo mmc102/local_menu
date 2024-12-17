@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurants</title>
+    <link href="/static/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-4">
+
+    <form method="POST" action="/suggestion" 
+        class="max-w-md bg-white p-6 rounded-lg mt-2 shadow-md sm:m-2">
+        <h1 class="text-xl font-bold mb-4 text-gray-800">Thanks for your feedback!</h1>
+        <div class="mb-4">
+            <textarea 
+                id="suggestion" 
+                name="suggestion" 
+                placeholder="Suggest a change" 
+                required
+                rows="4"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 resize-none"
+            ></textarea>
+        </div>
+        <button 
+            type="submit" 
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+            Submit
+        </button>
+    </form>
+</body>
+</html>
+
