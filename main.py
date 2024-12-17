@@ -61,6 +61,7 @@ class Restaurant(Base):
     location = Column(String, index=True)
     city = Column(String, index=True, nullable=True)
     website = Column(String)
+    url_verified_at = Column(DateTime, nullable=True)
     clicks = relationship("Click", back_populates="restaurant")
     categories = relationship("Category", secondary=restaurant_category, back_populates="restaurants")
 
@@ -118,7 +119,7 @@ def get_db():
 
 
 class RestaurantAdmin(ModelView, model=Restaurant):
-    column_list = [Restaurant.id, Restaurant.name, Restaurant.location, Restaurant.city, Restaurant.categories, Restaurant.website]
+    column_list = [Restaurant.id, Restaurant.name, Restaurant.location, Restaurant.city, Restaurant.categories, Restaurant.website, Restaurant.url_verified_at]
     form_include_relationships = True
 
 
